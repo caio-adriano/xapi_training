@@ -9,12 +9,20 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @Route("/studants", name="studant_")
  */
 class StudantController extends AbstractController
 {
+    private $client;
+
+    public function __construct(HttpClientInterface $client)
+    {
+        $this->client = $client;
+    }
+
     /**
      * @Route("/", name="index", methods={"GET"})
      */
@@ -48,8 +56,10 @@ class StudantController extends AbstractController
         }
 
         return $this->json([
-            'status' => 201,
-            'message' => 'Created',
+            'info' => [
+                'status' => 201,
+                'message' => 'Created',
+            ],
             'data' => $studant,
         ], 201);
     }
@@ -63,41 +73,68 @@ class StudantController extends AbstractController
      */
     public function courseRegister(Request $request, $studantID, $courseID): Response
     {
+        $url = "https://my-test.lrs.io/xapi/statements";
         $courseRepository = $this->getDoctrine()->getRepository(Course::class);
         $studantRepository = $this->getDoctrine()->getRepository(Studant::class);
         $studant = $studantRepository->find($studantID);
         $course = $courseRepository->find($courseID);
 
-        $studant->addCourse($course);
-        // $this->getDoctrine()->getManager()->flush();
+        $courses = $studant->getCourse();
+
+        if (!$courses->contains($course)) {
+            $studant->addCourse($course);
+            $this->getDoctrine()->getManager()->flush();
+
+            $stmt = [
+                'actor' => [
+                    'objectType' => 'Agent',
+                    'name' => $studant->getFullName(),
+                    'mbox' => "mailto:{$studant->getEmail()}",
+                ],
+                'verb' => [
+                    'id' => 'http://adlnet.gov/expapi/verbs/registered',
+                    'display' => [
+                        'en-US' => 'registered',
+                        'pt-BR' => 'matrículado',
+                    ],
+                ],
+                'object' => [
+                    'objectType' => 'Activity',
+                    'id' => $request->getUri(),
+                    'definition' => [
+                        'name' => [
+                            'en-US' => "registered in a new course",
+                            'pt-BR' => 'matrículado em um novo curso'
+                        ],
+                        'description' => [
+                            'en-US' => "registered in the course \"{$course->getName()}\"",
+                            'pt-BR' => "matrículado no curso \"{$course->getName()}\"",
+                        ],
+                    ],
+                ],
+            ];
+
+            $response = $this->client->request(
+                'POST',
+                $url,
+                [
+                    'auth_basic' => ['nojewd', 'lipell'],
+                    'body' => $stmt,
+                ]
+            );
+
+            return $this->json([
+                'info' => [
+                    'code' => Response::HTTP_CREATED,
+                ],
+            ], Response::HTTP_CREATED);
+        }
+
 
         return $this->json([
-            'actor' => [
-                'objectType' => 'Agent',
-                'name' => $studant->getFullName(),
-                'mbox' => "mailto:{$studant->getEmail()}",
+            'info' => [
+                'code' => Response::HTTP_ACCEPTED,
             ],
-            'verb' => [
-                'id' => 'http://adlnet.gov/expapi/verbs/registered',
-                'display' => [
-                    'en-US' => 'registered',
-                    'pt-BR' => 'matrículado',
-                ],
-            ],
-            'object' => [
-                'objectType' => 'Activity',
-                'id' => $request->getUri(),
-                'definition' => [
-                    'name' => [
-                        'en-US' => "registered in a new course",
-                        'pt-BR' => 'matrículado em um novo curso'
-                    ],
-                    'description' => [
-                        'en-US' => "registered in the course \"{$course->getName()}\"",
-                        'pt-BR' => "matrículado no curso \"{$course->getName()}\"",
-                    ],
-                ],
-            ],
-        ]);
+        ], Response::HTTP_ACCEPTED);
     }
 }
