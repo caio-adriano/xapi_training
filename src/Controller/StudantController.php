@@ -8,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -26,21 +27,39 @@ class StudantController extends AbstractController
     /**
      * @Route("/", name="index", methods={"GET"})
      */
-    public function index(): Response
+    public function index(SerializerInterface $serializer): Response
     {
-        return $this->json([]);
+        $studant = $this->getDoctrine()->getRepository(Studant::class)->findAll();
+
+        $json = $serializer->serialize($studant, 'json', [
+            'groups' => ['studant'],
+        ]);
+
+        return new Response($json, Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/{id}", name="show", methods={"GET"})
+     */
+    public function show(SerializerInterface $serializer, $id): Response
+    {
+        $studant = $this->getDoctrine()->getRepository(Studant::class)->find($id);
+
+        $json = $serializer->serialize($studant, 'json', ['groups' => ['Studant', 'Course']]);
+
+        return new Response($json, Response::HTTP_OK);
     }
 
     /**
      * @Route("/", name="create", methods={"POST"})
      */
-    public function create (Request $request, ValidatorInterface $validator): Response
+    public function create(Request $request, ValidatorInterface $validator): Response
     {
         $doctrine = $this->getDoctrine()->getManager();
         $data = $request->request->all();
         $dateTimeNow = new \DateTime('now', new \DateTimeZone('America/Sao_Paulo'));
 
-        $studant = new Studant;
+        $studant = new Studant();
         $studant->setFirstName($data['firstName']);
         $studant->setLastName($data['lastName']);
         $studant->setEmail($data['email']);
@@ -73,7 +92,7 @@ class StudantController extends AbstractController
      */
     public function courseRegister(Request $request, $studantID, $courseID): Response
     {
-        $url = "https://my-test.lrs.io/xapi/statements";
+        $url = 'https://my-test.lrs.io/xapi/statements';
         $courseRepository = $this->getDoctrine()->getRepository(Course::class);
         $studantRepository = $this->getDoctrine()->getRepository(Studant::class);
         $studant = $studantRepository->find($studantID);
@@ -103,8 +122,8 @@ class StudantController extends AbstractController
                     'id' => $request->getUri(),
                     'definition' => [
                         'name' => [
-                            'en-US' => "registered in a new course",
-                            'pt-BR' => 'matrículado em um novo curso'
+                            'en-US' => 'registered in a new course',
+                            'pt-BR' => 'matrículado em um novo curso',
                         ],
                         'description' => [
                             'en-US' => "registered in the course \"{$course->getName()}\"",
@@ -129,7 +148,6 @@ class StudantController extends AbstractController
                 ],
             ], Response::HTTP_CREATED);
         }
-
 
         return $this->json([
             'info' => [
