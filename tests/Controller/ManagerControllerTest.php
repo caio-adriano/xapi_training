@@ -88,5 +88,50 @@ class ManagerControllerTest extends WebTestCase
         return $responseContent;
     }
 
+    public function testCreateManagerWithInvalidNameLength()
+    {
+        $manager = new Manager();
+
+        $manager->setName(str_pad('test', 256, '_', STR_PAD_BOTH));
+
+        $this->assertGreaterThan(255, strlen($manager->getName()));
+        $this->client->request(
+            'POST',
+            '/managers',
+            [],
+            [],
+            [],
+            $this->serializer->serialize($manager, 'json')
+        );
+
+        $responseContent = $this->client->getResponse()->getContent();
+
+        $this->assertResponseStatusCodeSame(400);
+        $this->assertJson($responseContent);
+        $this->assertStringContainsString('"message":', $responseContent);
+    }
+
+    public function testCreateManagerWithBlankName()
+    {
+        $manager = new Manager();
+
+        $manager->setName('');
+
+        $this->client->request(
+            'POST',
+            '/managers',
+            [],
+            [],
+            [],
+            $this->serializer->serialize($manager, 'json'),
+        );
+
+        $responseContent = $this->client->getResponse()->getContent();
+
+        $this->assertResponseStatusCodeSame(400);
+        $this->assertJson($responseContent);
+        $this->assertStringContainsString('"message":', $responseContent);
+    }
+
 
 }
