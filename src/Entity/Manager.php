@@ -42,6 +42,13 @@ class Manager
         return $this->id;
     }
 
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
     public function getName(): ?string
     {
         return $this->name;
@@ -59,7 +66,7 @@ class Manager
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeInterface $created_at): self
+    public function setCreatedAt($created_at): self
     {
         $this->created_at = $created_at;
 
@@ -71,7 +78,7 @@ class Manager
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updated_at): self
+    public function setUpdatedAt($updated_at): self
     {
         $this->updated_at = $updated_at;
 

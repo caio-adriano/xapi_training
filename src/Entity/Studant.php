@@ -6,6 +6,7 @@ use App\Repository\StudantRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -17,6 +18,7 @@ class Studant
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"studant"})
      */
     private $id;
 
@@ -26,6 +28,7 @@ class Studant
      * @Assert\Length(
      *      max=100,
      * )
+     * @Groups({"studant"})
      */
     private $firstName;
 
@@ -35,16 +38,19 @@ class Studant
      * @Assert\Length(
      *      max=150
      * )
+     * @Groups({"studant"})
      */
     private $lastName;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"studant"})
      */
     private $created_at;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"studant"})
      */
     private $updated_at;
 
@@ -52,6 +58,7 @@ class Studant
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank
      * @Assert\Email
+     * @Groups({"studant"})
      */
     private $email;
 
@@ -96,7 +103,7 @@ class Studant
 
     public function getFullName(): ?string
     {
-        return $this->getFirstName() . ' ' . $this->getLastName();
+        return $this->getFirstName().' '.$this->getLastName();
     }
 
     public function getCreatedAt(): ?\DateTimeInterface
@@ -158,5 +165,4 @@ class Studant
 
         return $this;
     }
-
 }

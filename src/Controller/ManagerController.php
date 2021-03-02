@@ -10,12 +10,12 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
- * @Route("/manager", name="manager")
+ * @Route("/managers", name="manager")
  */
 class ManagerController extends AbstractController
 {
     /**
-     * @Route("/", name="index", methods={"GET"})
+     * @Route("", name="index", methods={"GET"})
      */
     public function index(): Response
     {
@@ -35,7 +35,7 @@ class ManagerController extends AbstractController
     }
 
     /**
-     * @Route("/", name="create", methods={"POST"})
+     * @Route("", name="create", methods={"POST"})
      */
     public function create(Request $request, ValidatorInterface $validator): Response
     {
