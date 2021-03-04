@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Lib\Entity\AbstractEntity;
 use App\Repository\LearnerRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -11,7 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity(repositoryClass=LearnerRepository::class)
  * @UniqueEntity("login")
  */
-class Learner
+class Learner extends AbstractEntity
 {
     /**
      * @ORM\Id
@@ -77,19 +78,20 @@ class Learner
      * @ORM\Column(
      *     type="integer",
      *     nullable=true,
+     *     name="entity_id",
      *     options={
      *         "default":1
      *     }
      * )
      * @Assert\Positive
      */
-    private $entity_id;
+    private $entityID;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="integer", name="manager_id", nullable=true)
      * @Assert\Positive
      */
-    private $manager_id;
+    private $managerID;
 
     /**
      * @ORM\Column(
@@ -99,22 +101,22 @@ class Learner
      *         "default":true
      *     }
      * )
-     * @Assert\Choice({true, false})
+     * @Assert\Type("bool")
      */
     private $enabled;
 
     /**
-     * @ORM\Column(type="date", nullable=true)
+     * @ORM\Column(type="string", name="enabled_from", nullable=true)
      * @Assert\Date
      */
-    private $enabled_from;
+    private $enabledFrom;
 
     /**
-     * @ORM\Column(type="date", nullable=true)
+     * @ORM\Column(type="string", name="enabled_until", nullable=true)
      * @Assert\Date
      * @Assert\GreaterThanOrEqual(propertyPath="enabled_from")
      */
-    private $enabled_until;
+    private $enabledUntil;
 
     /**
      * @ORM\Column(type="json", nullable=true)
@@ -126,12 +128,18 @@ class Learner
         return $this->id;
     }
 
+    public function setId(?int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
     public function getLogin(): ?string
     {
         return $this->login;
     }
 
-    public function setLogin(string $login): self
+    public function setLogin(?string $login): self
     {
         $this->login = $login;
 
@@ -179,7 +187,7 @@ class Learner
         return $this->email;
     }
 
-    public function setEmail(string $email): self
+    public function setEmail(?string $email): self
     {
         $this->email = $email;
 
@@ -210,26 +218,26 @@ class Learner
         return $this;
     }
 
-    public function getEntityId(): ?int
+    public function getEntityID(): ?int
     {
-        return $this->entity_id;
+        return $this->entityID;
     }
 
-    public function setEntityId(?int $entity_id): self
+    public function setEntityID(?int $entityID = null): self
     {
-        $this->entity_id = $entity_id;
+        (is_null($entityID)) ? $this->entityID = 1 : $this->entityID = $entityID;
 
         return $this;
     }
 
-    public function getManagerId(): ?int
+    public function getManagerID(): ?int
     {
-        return $this->manager_id;
+        return $this->managerID;
     }
 
-    public function setManagerId(?int $manager_id): self
+    public function setManagerID(?int $managerID): self
     {
-        $this->manager_id = $manager_id;
+        $this->managerID = $managerID;
 
         return $this;
     }
@@ -246,26 +254,26 @@ class Learner
         return $this;
     }
 
-    public function getEnabledFrom(): ?\DateTimeInterface
+    public function getEnabledFrom(): ?string
     {
-        return $this->enabled_from;
+        return $this->enabledFrom;
     }
 
-    public function setEnabledFrom(?\DateTimeInterface $enabled_from): self
+    public function setEnabledFrom(?string $enabledFrom): self
     {
-        $this->enabled_from = $enabled_from;
+        $this->enabledFrom = $enabledFrom;
 
         return $this;
     }
 
-    public function getEnabledUntil(): ?\DateTimeInterface
+    public function getEnabledUntil(): ?string
     {
-        return $this->enabled_until;
+        return $this->enabledUntil;
     }
 
-    public function setEnabledUntil(?\DateTimeInterface $enabled_until): self
+    public function setEnabledUntil(?string $enabledUntil): self
     {
-        $this->enabled_until = $enabled_until;
+        $this->enabledUntil = $enabledUntil;
 
         return $this;
     }

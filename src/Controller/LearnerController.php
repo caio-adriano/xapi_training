@@ -43,19 +43,7 @@ class LearnerController extends AbstractController
         $requestData = json_decode($requestData);
 
         $learner = new Learner();
-        $learner->setLogin($requestData->login)
-                ->setReferenceNumber($requestData->referenceNumber ?? null)
-                ->setSurname($requestData->surname ?? null)
-                ->setFirstName($requestData->firstName ?? null)
-                ->setEmail($requestData->email ?? null)
-                ->setLanguage($requestData->language ?? null)
-                ->setTimezone($requestData->timezone ?? null)
-                ->setEntityId($requestData->entityID ?? 1)
-                ->setManagerId($requestData->managerID ?? null)
-                ->setEnabled($requestData->enabled ?? true)
-                ->setEnabledFrom($requestData->enabledFrom ?? null)
-                ->setEnabledUntil($requestData->enabledUntil ?? null)
-                ->setCustomFields($requestData->customFields ?? null);
+        $learner->load((array) $requestData);
 
         $errors = $validator->validate($learner);
         if (count($errors) > 0) {
