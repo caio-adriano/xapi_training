@@ -3,34 +3,10 @@
 namespace App\Tests\Controller;
 
 use App\Entity\Manager;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
+use App\Lib\Test\AbstractApiTestCase;
 
-class ManagerControllerTest extends WebTestCase
+class ManagerControllerTest extends AbstractApiTestCase
 {
-    /** @var KernelBrowser */
-    private $client;
-
-    /** @var Serializer */
-    private $serializer;
-
-    public function setUp(): void
-    {
-        $this->client = static::createClient();
-        $this->client->disableReboot();
-
-        $this->serializer = new Serializer([
-            new ObjectNormalizer(),
-            new ArrayDenormalizer(),
-        ], [
-            new JsonEncoder()
-        ]);
-    }
-
     /**
      * @depends testCreateManager
      */

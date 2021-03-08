@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Configuration;
 use App\Lib\Entity\AbstractEntity;
 use App\Repository\LearnerRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -201,7 +202,8 @@ class Learner extends AbstractEntity
 
     public function setLanguage(?string $language): self
     {
-        $this->language = $language;
+
+        ($language) ? $this->language = $language : $this->language = Configuration::APP_LANGUAGE;
 
         return $this;
     }
@@ -249,7 +251,7 @@ class Learner extends AbstractEntity
 
     public function setEnabled(?bool $enabled): self
     {
-        $this->enabled = $enabled;
+        (is_null($enabled)) ? $this->enabled = true : $this->enabled = $enabled;
 
         return $this;
     }
