@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Lib\Entity\AbstractEntity;
 use App\Repository\ManagerRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -9,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\Entity(repositoryClass=ManagerRepository::class)
  */
-class Manager
+class Manager extends AbstractEntity
 {
     /**
      * @ORM\Id
@@ -28,14 +29,14 @@ class Manager
     private $name;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", name="created_at")
      */
-    private $created_at;
+    private $createdAt;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", name="updated_at")
      */
-    private $updated_at;
+    private $updatedAt;
 
     public function getId(): ?int
     {
@@ -63,24 +64,24 @@ class Manager
 
     public function getCreatedAt(): ?\DateTimeInterface
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
-    public function setCreatedAt($created_at): self
+    public function setCreatedAt($createdAt): self
     {
-        $this->created_at = $created_at;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
 
     public function getUpdatedAt(): ?\DateTimeInterface
     {
-        return $this->updated_at;
+        return $this->updatedAt;
     }
 
-    public function setUpdatedAt($updated_at): self
+    public function setUpdatedAt($updatedAt): self
     {
-        $this->updated_at = $updated_at;
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

@@ -32,12 +32,12 @@ class Learner extends AbstractEntity
     private $login;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type="string", name="reference_number", length=255, nullable=true)
      * @Assert\Length(
      *     max=100
      * )
      */
-    private $reference_number;
+    private $referenceNumber;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -46,10 +46,10 @@ class Learner extends AbstractEntity
     private $surname;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type="string", name="first_name", length=255, nullable=true)
      * @Assert\Length(max=255)
      */
-    private $first_name;
+    private $firstName;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -120,9 +120,9 @@ class Learner extends AbstractEntity
     private $enabledUntil;
 
     /**
-     * @ORM\Column(type="json", nullable=true)
+     * @ORM\Column(type="json", name="custom_fields", nullable=true)
      */
-    private $custom_fields = [];
+    private $customFields = [];
 
     public function getId(): ?int
     {
@@ -149,12 +149,12 @@ class Learner extends AbstractEntity
 
     public function getReferenceNumber(): ?string
     {
-        return $this->reference_number;
+        return $this->referenceNumber;
     }
 
-    public function setReferenceNumber(?string $reference_number): self
+    public function setReferenceNumber(?string $referenceNumber): self
     {
-        $this->reference_number = $reference_number;
+        $this->referenceNumber = $referenceNumber;
 
         return $this;
     }
@@ -173,12 +173,12 @@ class Learner extends AbstractEntity
 
     public function getFirstName(): ?string
     {
-        return $this->first_name;
+        return $this->firstName;
     }
 
-    public function setFirstName(?string $first_name): self
+    public function setFirstName(?string $firstName): self
     {
-        $this->first_name = $first_name;
+        $this->firstName = $firstName;
 
         return $this;
     }
@@ -282,12 +282,12 @@ class Learner extends AbstractEntity
 
     public function getCustomFields(): ?array
     {
-        return $this->custom_fields;
+        return $this->customFields;
     }
 
-    public function setCustomFields(?array $custom_fields): self
+    public function setCustomFields(?array $customFields): self
     {
-        $this->custom_fields = $custom_fields;
+        $this->customFields = $customFields;
 
         return $this;
     }

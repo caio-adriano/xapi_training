@@ -19,6 +19,9 @@ abstract class AbstractEntity
         foreach ($data as $attribute => $value) {
             if (property_exists($this, $attribute)) {
                 $this->{"set{$attribute}"}($value);
+            } else {
+                $message = "The attribute {$attribute} not exist";
+                throw new \FOS\RestBundle\Exception\InvalidParameterException($message);
             }
         }
 
