@@ -14,13 +14,38 @@ use Symfony\Component\Cache\Adapter\RedisAdapter;
  */
 class ManagerController extends AbstractController
 {
+    public $cache;
+
+    public function __construct() {
+        $this->cache = new RedisAdapter(RedisAdapter::createConnection($_SERVER['REDIS_PROTOCOL'] . $_SERVER['REDIS_HOST']));
+    }
+
     /**
      * @Route("", name="index", methods={"GET"})
      */
     public function index(): Response
     {
-        $manager = $this->getDoctrine()->getRepository(Manager::class)->findAll();
-        return $this->json($manager);
+        $qb = $this->getDoctrine()->getManager();
+        $qb = $qb->createQueryBuilder();
+        $qb->select('m.id')->from('App:Manager', 'm');
+        $managerIds = $qb->getQuery()->getResult();
+
+        foreach ($managerIds as $managerId) {
+            $manager = [];
+            $cachedManager = $this->cache->getItem('manager_list.' . $managerId['id']);
+            if (!$cachedManager->isHit()) {
+                $manager = $this->getDoctrine()->getRepository(Manager::class)->find($managerId['id']);
+
+                $cachedManager->set(serialize($manager));
+                $this->cache->save($cachedManager);
+            } else {
+                $manager = unserialize($cachedManager->get());
+            }
+            $managerList[] = $manager;
+            $cachedManager->expiresAfter(60);
+        }
+
+        return $this->json($managerList);
     }
 
     /**
@@ -28,13 +53,12 @@ class ManagerController extends AbstractController
      */
     public function show($id): Response
     {
-        $cache = new RedisAdapter(RedisAdapter::createConnection('redis://localhost'));
-        $cachedManager = $cache->getItem('manager_list.' . $id);
+        $cachedManager = $this->cache->getItem('manager_list.' . $id);
         if (!$cachedManager->isHit()) {
             $manager = $this->getDoctrine()->getRepository(Manager::class)->find($id);
 
             $cachedManager->set(serialize($manager));
-            $cache->save($cachedManager);
+            $this->cache->save($cachedManager);
         } else {
             $manager = unserialize($cachedManager->get());
         }
@@ -68,11 +92,10 @@ class ManagerController extends AbstractController
         $doctrine->persist($manager);
         $doctrine->flush();
 
-        $cache = new RedisAdapter(RedisAdapter::createConnection($_SERVER['REDIS_PROTOCOL'] . $_SERVER['REDIS_HOST']));
-        $newManager = $cache->getItem('manager_list.' . $manager->getId());
+        $newManager = $this->cache->getItem('manager_list.' . $manager->getId());
         if (!$newManager->isHit()) {
             $newManager->set(serialize(json_decode($this->json($manager)->getContent(), true)));
-            $cache->save($newManager);
+            $this->cache->save($newManager);
             $newManager->expiresAfter(3600);
         }
 

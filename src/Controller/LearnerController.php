@@ -15,13 +15,38 @@ use Symfony\Component\Cache\Adapter\RedisAdapter;
  */
 class LearnerController extends AbstractController
 {
+    public $cache;
+
+    public function __construct() {
+        $this->cache = new RedisAdapter(RedisAdapter::createConnection($_SERVER['REDIS_PROTOCOL'] . $_SERVER['REDIS_HOST']));
+    }
+
     /**
      * @Route("", name="index", methods={"GET"})
      */
     public function index(): Response
     {
-        $learners = $this->getDoctrine()->getRepository(Learner::class)->findAll();
-        return $this->json($learners);
+        $qb = $this->getDoctrine()->getManager();
+        $qb = $qb->createQueryBuilder();
+        $qb->select('l.id')->from('App:Learner', 'l');
+        $learnerIds = $qb->getQuery()->getResult();
+
+        foreach ($learnerIds as $learnerId) {
+            $learner = [];
+            $cachedLearner = $this->cache->getItem('learner_list.' . $learnerId['id']);
+            if (!$cachedLearner->isHit()) {
+                $learner = $this->getDoctrine()->getRepository(Learner::class)->find($learnerId['id']);
+
+                $cachedLearner->set(serialize($learner));
+                $this->cache->save($cachedLearner);
+            } else {
+                $learner = unserialize($cachedLearner->get());
+            }
+            $learnerList[] = $learner;
+            $cachedLearner->expiresAfter(60);
+        }
+
+        return $this->json($learnerList);
     }
 
     /**
@@ -29,13 +54,12 @@ class LearnerController extends AbstractController
      */
     public function show($id): Response
     {
-        $cache = new RedisAdapter(RedisAdapter::createConnection('redis://localhost'));
-        $cachedLearner = $cache->getItem('learner_list.' . $id);
+        $cachedLearner = $this->cache->getItem('learner_list.' . $id);
         if (!$cachedLearner->isHit()) {
             $learner = $this->getDoctrine()->getRepository(Learner::class)->find($id);
 
             $cachedLearner->set(serialize($learner));
-            $cache->save($cachedLearner);
+            $this->cache->save($cachedLearner);
         } else {
             $learner = unserialize($cachedLearner->get());
         }
@@ -66,11 +90,10 @@ class LearnerController extends AbstractController
         $doctrine->persist($learner);
         $doctrine->flush();
 
-        $cache = new RedisAdapter(RedisAdapter::createConnection($_SERVER['REDIS_PROTOCOL'] . $_SERVER['REDIS_HOST']));
-        $newLearner = $cache->getItem('learner_list.' . $learner->getId());
+        $newLearner = $this->cache->getItem('learner_list.' . $learner->getId());
         if (!$newLearner->isHit()) {
             $newLearner->set(serialize(json_decode($this->json($learner)->getContent(), true)));
-            $cache->save($newLearner);
+            $this->cache->save($newLearner);
             $newLearner->expiresAfter(3600);
         }
 
@@ -115,11 +138,10 @@ class LearnerController extends AbstractController
 
         $doctrine->flush();
 
-        $cache = new RedisAdapter(RedisAdapter::createConnection($_SERVER['REDIS_PROTOCOL'] . $_SERVER['REDIS_HOST']));
-        $updateLearner = $cache->getItem('learner_list.' . $learner->getId());
+        $updateLearner = $this->cache->getItem('learner_list.' . $learner->getId());
         if (!$updateLearner->isHit()) {
             $updateLearner->set(serialize($learner));
-            $cache->save($updateLearner);
+            $this->cache->save($updateLearner);
         } else {
             $learner = unserialize($updateLearner->get());
         }
