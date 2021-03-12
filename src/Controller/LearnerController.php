@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 /**
  * @Route("/learners", name="learner_")
@@ -28,7 +29,17 @@ class LearnerController extends AbstractController
      */
     public function show($id): Response
     {
-        $learner = $this->getDoctrine()->getRepository(Learner::class)->find($id);
+        $cache = new RedisAdapter(RedisAdapter::createConnection('redis://localhost'));
+        $cachedLearner = $cache->getItem('learner_list.' . $id);
+        if (!$cachedLearner->isHit()) {
+            $learner = $this->getDoctrine()->getRepository(Learner::class)->find($id);
+
+            $cachedLearner->set(serialize($learner));
+            $cache->save($cachedLearner);
+        } else {
+            $learner = unserialize($cachedLearner->get());
+        }
+        $cachedLearner->expiresAfter(60);
 
         return $this->json($learner);
     }
@@ -54,6 +65,14 @@ class LearnerController extends AbstractController
 
         $doctrine->persist($learner);
         $doctrine->flush();
+
+        $cache = new RedisAdapter(RedisAdapter::createConnection($_SERVER['REDIS_PROTOCOL'] . $_SERVER['REDIS_HOST']));
+        $newLearner = $cache->getItem('learner_list.' . $learner->getId());
+        if (!$newLearner->isHit()) {
+            $newLearner->set(serialize(json_decode($this->json($learner)->getContent(), true)));
+            $cache->save($newLearner);
+            $newLearner->expiresAfter(3600);
+        }
 
         return $this->json($learner);
     }
@@ -95,6 +114,16 @@ class LearnerController extends AbstractController
         }
 
         $doctrine->flush();
+
+        $cache = new RedisAdapter(RedisAdapter::createConnection($_SERVER['REDIS_PROTOCOL'] . $_SERVER['REDIS_HOST']));
+        $updateLearner = $cache->getItem('learner_list.' . $learner->getId());
+        if (!$updateLearner->isHit()) {
+            $updateLearner->set(serialize($learner));
+            $cache->save($updateLearner);
+        } else {
+            $learner = unserialize($updateLearner->get());
+        }
+        $updateLearner->expiresAfter(3600);
 
         return $this->json($learner);
     }
