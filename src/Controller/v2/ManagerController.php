@@ -29,6 +29,19 @@ class ManagerController extends AbstractFOSRestController
     }
 
     /**
+     * @Rest\Get("/{id}", name="get_one_manager")
+     */
+    public function show($id): Response
+    {
+        $managerRepository = $this->getDoctrine()->getRepository(Manager::class);
+
+        $manager = $managerRepository->find($id);
+        $view    = $this->view($manager);
+
+        return $this->handleView($view);
+    }
+
+    /**
      * @Rest\Post("", name="create a manager")
      */
     public function create(Request $request, ValidatorInterface $validator): Response
