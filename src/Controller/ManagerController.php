@@ -21,13 +21,16 @@ class ManagerController extends AbstractController
     }
 
     /**
-     * @Route("", name="index", methods={"GET"})
+     * @Route("/{limit}/{page}", name="index", methods={"GET"}, defaults={"page"=1})
      */
-    public function index(): Response
+    public function index($limit, $page): Response
     {
         $qb = $this->getDoctrine()->getManager();
         $qb = $qb->createQueryBuilder();
-        $qb->select('m.id')->from('App:Manager', 'm');
+        $qb->select('m.id')
+            ->from('App:Manager', 'm')
+            ->setFirstResult($limit * ($page - 1))
+            ->setMaxResults($limit);
         $managerIds = $qb->getQuery()->getResult();
 
         foreach ($managerIds as $managerId) {

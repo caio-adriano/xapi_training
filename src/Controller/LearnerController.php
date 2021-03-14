@@ -22,13 +22,16 @@ class LearnerController extends AbstractController
     }
 
     /**
-     * @Route("", name="index", methods={"GET"})
+     * @Route("/{limit}/{page}", name="index", methods={"GET"}, defaults={"page"=1})
      */
-    public function index(): Response
+    public function index($limit, $page): Response
     {
+        $learnerList = [];
         $qb = $this->getDoctrine()->getManager();
         $qb = $qb->createQueryBuilder();
-        $qb->select('l.id')->from('App:Learner', 'l');
+        $qb->select('l.id')->from('App:Learner', 'l')
+            ->setFirstResult($limit * ($page - 1))
+            ->setMaxResults($limit);
         $learnerIds = $qb->getQuery()->getResult();
 
         foreach ($learnerIds as $learnerId) {
@@ -139,13 +142,12 @@ class LearnerController extends AbstractController
         $doctrine->flush();
 
         $updateLearner = $this->cache->getItem('learner_list.' . $learner->getId());
-        if (!$updateLearner->isHit()) {
+        if ($updateLearner->isHit()) {
             $updateLearner->set(serialize($learner));
             $this->cache->save($updateLearner);
-        } else {
             $learner = unserialize($updateLearner->get());
+            $updateLearner->expiresAfter(3600);
         }
-        $updateLearner->expiresAfter(3600);
 
         return $this->json($learner);
     }
