@@ -66,4 +66,34 @@ class LearnerController extends AbstractFOSRestController
 
         return $this->handleView($view);
     }
+
+    /**
+
+     * @Rest\Route("/{id}", name="update a learner", methods={"put", "patch"})
+     */
+    public function update(Request $request, ValidatorInterface $validator, $id): Response
+    {
+        $learnerRespositoy = $this->getDoctrine()->getRepository(Learner::class);
+        $em                = $this->getDoctrine()->getManager();
+
+        $requestData = json_decode($request->getContent(), true);
+
+        $learner = $learnerRespositoy->find($id);
+
+        if ($requestData) {
+            $learner->load($requestData);
+        }
+
+        // validate learner
+        $errors = $validator->validate($learner);
+        if (0 !== count($errors)) {
+            throw new InvalidParameterException((string) $errors);
+        }
+
+        $em->flush();
+
+        $view = $this->view($learner);
+
+        return $this->handleView($view);
+    }
 }

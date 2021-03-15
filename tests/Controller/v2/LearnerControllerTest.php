@@ -57,4 +57,43 @@ class LearnerControllerTest extends ApiTestCase
 
         return;
     }
+
+    /**
+     * @depends testCreateLearnerWithDefaultAttributesValueEqualNull
+     */
+    public function testUpdate(Learner $learner): void
+    {
+        $data = [
+            'firstName' => 'test',
+            'entityID'  => 10,
+            'email' => 'test@test02.com.br',
+        ];
+
+        $this->client->request(
+            'PATCH',
+            "/v2/learners/{$learner->getId()}",
+            [],
+            [],
+            [],
+            json_encode($data)
+        );
+
+        $responseContent = $this->client->getResponse()->getContent();
+
+        $this->assertResponseStatusCodeSame(200);
+        $this->assertJson($responseContent);
+
+        $learnerUpdated = $this->serializer->deserialize($responseContent, Learner::class, 'json');
+
+        $this->assertIsString($learnerUpdated->getFirstName());
+        $this->assertEquals('test', $learnerUpdated->getFirstName());
+
+        $this->assertIsInt($learnerUpdated->getEntityID());
+        $this->assertEquals(10, $learnerUpdated->getEntityID());
+
+        $this->assertIsString($learnerUpdated->getEmail());
+        $this->assertEquals('test@test02.com.br', $learnerUpdated->getEmail());
+
+        return;
+    }
 }
