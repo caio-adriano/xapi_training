@@ -22,11 +22,15 @@ class LearnerController extends AbstractController
     }
 
     /**
-     * @Route("/{limit}/{page}", name="index", methods={"GET"}, defaults={"page"=1})
+     * @Route("", name="index", methods={"GET"})
      */
-    public function index($limit, $page): Response
+    public function index(Request $request): Response
     {
         $learnerList = [];
+
+        $page  = $request->query->get('page')  ?? 1;
+        $limit = $request->query->get('limit') ?? 5;
+
         $qb = $this->getDoctrine()->getManager();
         $qb = $qb->createQueryBuilder();
         $qb->select('l.id')->from('App:Learner', 'l')
