@@ -19,6 +19,16 @@ class ManagerRepository extends ServiceEntityRepository
         parent::__construct($registry, Manager::class);
     }
 
+    public function getIdsPaginated(int $page, int $limit)
+    {
+        return $this->createQueryBuilder('m')
+            ->select('m.id')
+            ->setFirstResult($limit * ($page - 1))
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return Manager[] Returns an array of Manager objects
     //  */
