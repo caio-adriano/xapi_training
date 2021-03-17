@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 /**
- * @Route("/managers", name="manager")
+ * @Route("/v2.0/managers", name="manager")
  */
 class ManagerController extends AbstractController
 {

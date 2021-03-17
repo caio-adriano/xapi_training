@@ -16,7 +16,7 @@ class ManagerControllerTest extends AbstractApiTestCase
 
         $this->client->request(
             'POST',
-            '/v2/managers',
+            '/v2.1/managers',
             [],
             [],
             [],
@@ -36,7 +36,7 @@ class ManagerControllerTest extends AbstractApiTestCase
      */
     public function testIndexManager(string $manager): void
     {
-        $this->client->request('GET', '/v2/managers');
+        $this->client->request('GET', '/v2.1/managers');
 
         $responseContent = $this->client->getResponse()->getContent();
 
@@ -53,7 +53,7 @@ class ManagerControllerTest extends AbstractApiTestCase
     public function testShowManager(string $manager): void
     {
         $managerEntity = $this->serializer->deserialize($manager, Manager::class, 'json');
-        $this->client->request('GET', "/v2/managers/{$managerEntity->getId()}");
+        $this->client->request('GET', "/v2.1/managers/{$managerEntity->getId()}");
 
         $responseContent = $this->client->getResponse()->getContent();
 

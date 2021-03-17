@@ -11,7 +11,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 /**
- * @Route("/learners", name="learner_")
+ * @Route("/v2.0/learners", name="learner_")
  */
 class LearnerController extends AbstractController
 {

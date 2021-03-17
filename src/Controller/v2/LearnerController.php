@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
- * @Rest\Route("v2/learners")
+ * @Rest\Route("v2.1/learners")
  */
 class LearnerController extends AbstractFOSRestController
 {

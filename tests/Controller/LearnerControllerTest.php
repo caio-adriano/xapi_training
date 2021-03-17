@@ -22,7 +22,7 @@ class LearnerControllerTest extends ApiTestCase
 
         $this->client->request(
             'POST',
-            '/learners',
+            '/v2.0/learners',
             [],
             [],
             [],
@@ -49,7 +49,7 @@ class LearnerControllerTest extends ApiTestCase
 
         $this->client->request(
             'POST',
-            '/learners',
+            '/v2.0/learners',
             [],
             [],
             [],

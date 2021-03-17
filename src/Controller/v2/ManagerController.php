@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
- * @Rest\Route("v2/managers")
+ * @Rest\Route("v2.1/managers")
  */
 class ManagerController extends AbstractFOSRestController
 {

@@ -14,7 +14,7 @@ class ManagerControllerTest extends AbstractApiTestCase
     {
         $managerEntity = $this->serializer->deserialize($manager, Manager::class, 'json');
 
-        $this->client->request('GET', "/managers/{$managerEntity->getId()}");
+        $this->client->request('GET', "/v2.0/managers/{$managerEntity->getId()}");
 
         $responseContent = $this->client->getResponse()->getContent();
 
@@ -28,7 +28,7 @@ class ManagerControllerTest extends AbstractApiTestCase
      */
     public function testIndexManager($manager): void
     {
-        $this->client->request('GET', '/managers');
+        $this->client->request('GET', '/v2.0/managers');
 
         $responseContent = $this->client->getResponse()->getContent();
 
@@ -44,7 +44,7 @@ class ManagerControllerTest extends AbstractApiTestCase
 
         $this->client->request(
             'POST',
-            '/managers',
+            '/v2.0/managers',
             [],
             [],
             [],
@@ -73,7 +73,7 @@ class ManagerControllerTest extends AbstractApiTestCase
         $this->assertGreaterThan(255, strlen($manager->getName()));
         $this->client->request(
             'POST',
-            '/managers',
+            '/v2.0/managers',
             [],
             [],
             [],
@@ -95,7 +95,7 @@ class ManagerControllerTest extends AbstractApiTestCase
 
         $this->client->request(
             'POST',
-            '/managers',
+            '/v2.0/managers',
             [],
             [],
             [],
