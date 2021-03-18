@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Learner;
+use App\Entity\Manager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,7 +12,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 /**
- * @Route("/v2.0/learners", name="learner_")
+ * @Route("/v2/learners", name="learner_")
  */
 class LearnerController extends AbstractController
 {
@@ -139,7 +140,55 @@ class LearnerController extends AbstractController
         $errors = $validator->validate($learner);
         if (count($errors) > 0) {
             return $this->json([
+                'message' => (string) $errors
+            ], Response::HTTP_BAD_REQUEST);
+        }
 
+        $doctrine->flush();
+
+        $updateLearner = $this->cache->getItem('learner_list.' . $learner->getId());
+        if ($updateLearner->isHit()) {
+            $updateLearner->set(serialize($learner));
+            $this->cache->save($updateLearner);
+            $learner = unserialize($updateLearner->get());
+            $updateLearner->expiresAfter(3600);
+        }
+
+        return $this->json($learner);
+    }
+
+    /**
+     * @Route("/{learnerId}/manager", name="getLearnersManager", methods={"GET"})
+     */
+    public function getLearnersManager($learnerId)
+    {
+        $learnerRepository = $this->getDoctrine()->getRepository(Learner::class);
+        $managerRepository = $this->getDoctrine()->getRepository(Manager::class);
+
+        $learner = $learnerRepository->find($learnerId);
+
+        $managerId = $learner->getManagerID();
+        $manager   = $managerRepository->find($managerId);
+
+        return $this->json($manager);
+    }
+
+    /**
+     * @Route("/{id}/manager/{managerId}", name="", methods={"PATCH"})
+     */
+    public function updateLearnersManager(ValidatorInterface $validator, $id, $managerId)
+    {
+        $doctrine          = $this->getDoctrine()->getManager();
+        $learnerRepository = $this->getDoctrine()->getRepository(Learner::class);
+
+        $learner = $learnerRepository->find($id);
+        $learner->setManagerId($managerId ?? null);
+
+
+        $errors = $validator->validate($learner);
+        if (count($errors) > 0) {
+            return $this->json([
+                'message' => (string) $errors
             ], Response::HTTP_BAD_REQUEST);
         }
 
